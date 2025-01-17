@@ -8,7 +8,6 @@ function Dashboard() {
         <Col>
           <h2>Dashboard</h2>
           <p>Tu mogą być np. statystyki wydarzeń, liczba zapisanych osób itd.</p>
-          {/* Możesz dodać np. link do edycji wydarzeń, listę wszystkich stworzonych przez użytkownika, itp. */}
         </Col>
       </Row>
     </Container>

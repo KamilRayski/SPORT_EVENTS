@@ -47,8 +47,6 @@ services:
       - "3000:80"
     networks:
       - sport-events-network
-    # depends_on nie jest konieczne, bo i tak łączymy się z backendem
-    # na porcie hosta 8000 (lub innym)...
 
 networks:
   sport-events-network:

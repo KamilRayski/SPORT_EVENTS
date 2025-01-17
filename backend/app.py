@@ -48,7 +48,6 @@ def events():
                 "capacity": ev.capacity,
                 "creator_name": ev.creator_name,
                 "description": ev.description
-                # możesz dodać też np. licznik signups
             })
         return jsonify(result), 200
 

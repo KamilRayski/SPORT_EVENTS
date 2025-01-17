@@ -6,7 +6,7 @@ class Event(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    address = db.Column(db.String(200), nullable=False)  # Nowy atrybut: adres
+    address = db.Column(db.String(200), nullable=False)  # adres
     latitude = db.Column(db.Float, nullable=True)        # Koordynaty
     longitude = db.Column(db.Float, nullable=True)
     date = db.Column(db.DateTime, default=datetime.utcnow)
@@ -25,3 +25,9 @@ class Signup(db.Model):
     email = db.Column(db.String(100), nullable=False)
 
     event_id = db.Column(db.Integer, db.ForeignKey("events.id"), nullable=False)
+
+
+
+
+# DO poprawy modele. W evencie mają być Foreign Key do użytkownika autora i do użytkowników zapisanych na event.
+# W signups mają być Foreign Key do eventu i do użytkownika zapisanego na event.
