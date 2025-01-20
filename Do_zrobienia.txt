@@ -1,1 +1,0 @@
-Trzeba dodać sprawdzanie zapisanych użytkowników żeby aktualizowała się liczba wolnych miejsc w aplikacji
