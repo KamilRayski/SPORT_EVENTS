@@ -1,3 +1,4 @@
+// frontend/src/components/EventForm.js
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import DatePicker from "react-datepicker";
@@ -8,8 +9,8 @@ const EventForm = ({ onSave }) => {
   const [date, setDate] = useState(new Date());
   const [capacity, setCapacity] = useState(10);
   const [creatorName, setCreatorName] = useState("");
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+  const [creatorEmail, setCreatorEmail] = useState("");
+  const [description, setDescription] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -19,8 +20,8 @@ const EventForm = ({ onSave }) => {
       date: date.toISOString(),
       capacity,
       creator_name: creatorName,
-      latitude: parseFloat(latitude) || null,
-      longitude: parseFloat(longitude) || null,
+      creator_email: creatorEmail,
+      description
     });
   };
 
@@ -67,7 +68,7 @@ const EventForm = ({ onSave }) => {
       </Form.Group>
 
       <Form.Group className="mb-3">
-        <Form.Label>Twoje imię/nick (Organizator)</Form.Label>
+        <Form.Label>Organizator - nazwa</Form.Label>
         <Form.Control
           type="text"
           value={creatorName}
@@ -77,18 +78,22 @@ const EventForm = ({ onSave }) => {
       </Form.Group>
 
       <Form.Group className="mb-3">
-        <Form.Label>Współrzędne (opcjonalnie)</Form.Label>
+        <Form.Label>Organizator - email</Form.Label>
         <Form.Control
-          type="text"
-          placeholder="Szerokość geo (lat)"
-          value={latitude}
-          onChange={(e) => setLatitude(e.target.value)}
+          type="email"
+          value={creatorEmail}
+          onChange={(e) => setCreatorEmail(e.target.value)}
+          required
         />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Opis wydarzenia</Form.Label>
         <Form.Control
-          type="text"
-          placeholder="Długość geo (lng)"
-          value={longitude}
-          onChange={(e) => setLongitude(e.target.value)}
+          as="textarea"
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
         />
       </Form.Group>
 

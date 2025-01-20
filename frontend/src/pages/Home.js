@@ -1,3 +1,4 @@
+// frontend/src/pages/Home.js
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import EventForm from "../components/EventForm";
@@ -32,7 +33,8 @@ function Home() {
         setShowForm(false);
         fetchEvents();
       } else {
-        alert("Błąd tworzenia wydarzenia!");
+        const errData = await res.json();
+        alert("Błąd tworzenia wydarzenia: " + (errData.error || "???"));
       }
     } catch (err) {
       console.error(err);
@@ -57,7 +59,11 @@ function Home() {
           <ul style={{ marginTop: 20 }}>
             {events.map((ev) => (
               <li key={ev.id}>
-                <a href={`/events/${ev.id}`}>{ev.title}</a> - {ev.address}
+                <a href={`/events/${ev.id}`}>{ev.title}</a> — {ev.address}
+                {" | "}Organizator:{" "}
+                {ev.creator_username
+                  ? `${ev.creator_username} (${ev.creator_email})`
+                  : "Brak"}
               </li>
             ))}
           </ul>
