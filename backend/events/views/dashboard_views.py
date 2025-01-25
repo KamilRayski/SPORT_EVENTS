@@ -1,44 +1,53 @@
-import json
-from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponseBadRequest, HttpResponseNotFound
-from django.views.decorators.csrf import csrf_exempt
-from events.models import User
+# events/views/dashboard_views.py
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 
-@csrf_exempt
+from events.models import User, Event
+from django.shortcuts import get_object_or_404
+
+@api_view(["POST"])
 def dashboard_events(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return HttpResponseBadRequest("Invalid JSON")
+    """
+    POST /dashboard_events/
+    Body JSON: { "email": "..." }
 
-        email = data.get("email")
-        if not email:
-            return JsonResponse({"error": "Email is required"}, status=400)
+    Zwraca listę eventów stworzonych przez usera o wskazanym emailu,
+    wraz z listą zapisanych uczestników (username, email).
+    """
+    email = request.data.get("email")
+    if not email:
+        return Response(
+            {"error": "Brak email w żądaniu."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-        user = User.objects.filter(email=email).first()
-        if not user:
-            return JsonResponse({"error": "User not found"}, status=404)
+    user = User.objects.filter(email=email).first()
+    if not user:
+        return Response(
+            {"error": "Nie znaleziono użytkownika o podanym emailu."},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
-        events = user.events_created.all()
-        response = []
-        for ev in events:
-            signups_list = []
-            for signup in ev.signups.all():
-                signups_list.append({
-                    "username": signup.user.username,
-                    "email": signup.user.email
-                })
-            response.append({
-                "event_id": ev.id,
-                "title": ev.title,
-                "address": ev.address,
-                "date": ev.date.isoformat(),
-                "description": ev.description,
-                "capacity": ev.capacity,
-                "signups": signups_list
+    events = Event.objects.filter(creator=user).order_by("-date")
+
+    data = []
+    for ev in events:
+        signups = ev.signups.select_related("user").all()
+        signups_list = []
+        for s in signups:
+            signups_list.append({
+                "username": s.user.username,
+                "email": s.user.email
             })
+        data.append({
+            "event_id": ev.id,
+            "title": ev.title,
+            "address": ev.address,
+            "date": ev.date,
+            "capacity": ev.capacity,
+            "description": ev.description,
+            "signups": signups_list
+        })
 
-        return JsonResponse(response, safe=False, status=200)
-
-    else:
-        return HttpResponseNotAllowed(['POST'])
+    return Response(data, status=status.HTTP_200_OK)

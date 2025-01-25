@@ -13,7 +13,7 @@ function EventDetails() {
 
   const fetchEvent = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/events/${id}`);
+      const res = await fetch(`http://localhost:8000/events/${id}/`);
       const data = await res.json();
       setEvent(data);
     } catch (err) {
@@ -60,7 +60,7 @@ function EventDetails() {
     if (!userName || !userEmail) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/events/${id}/signups`, {
+      const res = await fetch(`http://localhost:8000/events/${id}/signups/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: userName, email: userEmail }),

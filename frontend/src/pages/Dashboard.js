@@ -9,7 +9,7 @@ function Dashboard() {
 
   const handleSearch = async () => {
     try {
-      const res = await fetch("http://localhost:8000/dashboard_events", {
+      const res = await fetch("http://localhost:8000/dashboard_events/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

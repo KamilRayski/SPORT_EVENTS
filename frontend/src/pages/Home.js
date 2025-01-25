@@ -9,7 +9,7 @@ function Home() {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch("http://localhost:8000/events");
+      const res = await fetch("http://localhost:8000/events/");
       const data = await res.json();
       setEvents(data);
     } catch (err) {
@@ -23,7 +23,7 @@ function Home() {
 
   const handleCreateEvent = async (eventData) => {
     try {
-      const res = await fetch("http://localhost:8000/events", {
+      const res = await fetch("http://localhost:8000/events/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(eventData),

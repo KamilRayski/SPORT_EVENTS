@@ -1,38 +1,46 @@
-import json
-from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponseBadRequest, HttpResponseNotFound
-from django.views.decorators.csrf import csrf_exempt
-from events.models import Event, Signup, User
+# events/views/signups_views.py
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
 
-@csrf_exempt
+from events.models import Event, User, Signup
+
+@api_view(["POST"])
 def signup_for_event(request, event_id):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return HttpResponseBadRequest("Invalid JSON")
+    """
+    POST /events/<event_id>/signups/
+    Body JSON: { "name": "...", "email": "..." }
+    """
+    event = get_object_or_404(Event, id=event_id)
 
-        try:
-            event = Event.objects.get(id=event_id)
-        except Event.DoesNotExist:
-            return HttpResponseNotFound("Event not found")
+    name = request.data.get("name")
+    email = request.data.get("email")
 
-        user_name = data.get("name")
-        user_email = data.get("email")
-        if not user_name or not user_email:
-            return JsonResponse({"error": "Brak wymaganych danych (imię, email)."}, status=400)
+    if not name or not email:
+        return Response(
+            {"error": "Brak wymaganych danych (name, email)."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    if event.signups.count() >= event.capacity:
+        return Response(
+            {"error": "Brak wolnych miejsc."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-        signups_count = event.signups.count()
-        if signups_count >= event.capacity:
-            return JsonResponse({"error": "Brak wolnych miejsc w tym wydarzeniu."}, status=400)
+    user, created = User.objects.get_or_create(email=email)
+    if created:
+        user.username = name
+        user.save()
 
-        user, created = User.objects.get_or_create(email=user_email, defaults={'username': user_name})
+    already_signed = Signup.objects.filter(event=event, user=user).exists()
+    if already_signed:
+        return Response(
+            {"error": "Użytkownik jest już zapisany na to wydarzenie."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-        existing_signup = Signup.objects.filter(event=event, user=user).first()
-        if existing_signup:
-            return JsonResponse({"error": "Już jesteś zapisany na to wydarzenie."}, status=400)
+    Signup.objects.create(event=event, user=user)
 
-        Signup.objects.create(event=event, user=user)
-        return JsonResponse({"message": "Zapisano pomyślnie!"}, status=201)
-
-    else:
-        return HttpResponseNotAllowed(['POST'])
+    return Response({"message": "Zapisano pomyślnie!"}, status=status.HTTP_201_CREATED)
