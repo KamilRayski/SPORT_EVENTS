@@ -33,6 +33,7 @@ services:
       DATABASE_HOST: db
       DATABASE_PORT: "5432"
       DATABASE_NAME: sports_db
+      DJANGO_SETTINGS_MODULE: sport_events.settings
     ports:
       - "8000:8000"
     networks:
