@@ -1,5 +1,6 @@
+# events/serializers.py
 from rest_framework import serializers
-from .models import User, Event, Signup
+from .models import User, Event, Signup, Favorite
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -7,7 +8,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "email"]
 
 class EventSerializer(serializers.ModelSerializer):
-    # Pola tylko do odczytu, wyprowadzone z powiązanego obiektu `creator`
     creator_username = serializers.CharField(source='creator.username', read_only=True)
     creator_email = serializers.EmailField(source='creator.email', read_only=True)
     signups_count = serializers.IntegerField(source='signups.count', read_only=True)
@@ -40,3 +40,11 @@ class SignupSerializer(serializers.ModelSerializer):
             "user_username",
             "user_email",
         ]
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    event_title = serializers.CharField(source='event.title', read_only=True)
+    event_date = serializers.DateTimeField(source='event.date', read_only=True)
+
+    class Meta:
+        model = Favorite
+        fields = ['id', 'event', 'event_title', 'event_date']
