@@ -10,10 +10,20 @@ function EventDetails() {
   const [coords, setCoords] = useState(null);
 
   const fetchEvent = async () => {
+    const token = localStorage.getItem("accessToken");
     try {
-      const res = await fetch(`http://localhost:8000/events/${id}/`);
-      const data = await res.json();
-      setEvent(data);
+      const res = await fetch(`http://localhost:8000/events/${id}/`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setEvent(data);
+      } else {
+        console.error("Błąd pobierania szczegółów wydarzenia");
+      }
     } catch (err) {
       console.error(err);
     }

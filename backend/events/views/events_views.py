@@ -21,16 +21,7 @@ def events_list_create(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == "POST":
-        # {
-        #   "title": "...",
-        #   "address": "...",
-        #   "date": "...", (ISO datetime)
-        #   "capacity": 10,
-        #   "creator_name": "...",
-        #   "creator_email": "...",
-        #   "description": "..."
-        # }
-
+        
         title = request.data.get("title")
         address = request.data.get("address")
         date = request.data.get("date")  # format ISO
