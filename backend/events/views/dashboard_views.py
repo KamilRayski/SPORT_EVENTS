@@ -34,12 +34,11 @@ def dashboard_events(request):
     data = []
     for ev in events:
         signups = ev.signups.select_related("user").all()
-        signups_list = []
-        for s in signups:
-            signups_list.append({
-                "username": s.user.username,
-                "email": s.user.email
-            })
+        signups_list = [
+            {"username": s.user.username, "email": s.user.email}
+            for s in ev.signups.select_related("user").all()
+        ]
+
         data.append({
             "event_id": ev.id,
             "title": ev.title,
