@@ -1,8 +1,6 @@
-// frontend/src/pages/EventDetails.js
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Container, Row, Col, Button } from "react-bootstrap";
-
+import { Container, Row, Col, Button, Card } from "react-bootstrap";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 
@@ -41,7 +39,6 @@ function EventDetails() {
       });
       const data = await res.json();
       if (data && data.length > 0) {
-        // Bierzemy pierwszy wynik
         setCoords({
           lat: parseFloat(data[0].lat),
           lng: parseFloat(data[0].lon),
@@ -52,17 +49,18 @@ function EventDetails() {
     }
   };
 
-  if (!event) return <div>Ładowanie...</div>;
-
   const handleSignup = async () => {
     const userName = prompt("Twoje imię:");
     const userEmail = prompt("Twój email:");
     if (!userName || !userEmail) return;
-
+    const token = localStorage.getItem("accessToken");
     try {
       const res = await fetch(`http://localhost:8000/events/${id}/signups/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
         body: JSON.stringify({ name: userName, email: userEmail }),
       });
       if (res.ok) {
@@ -79,51 +77,43 @@ function EventDetails() {
 
   const defaultIcon = L.icon({
     iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-    shadowUrl:
-      "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
   });
   L.Marker.prototype.options.icon = defaultIcon;
 
-  const freeSpots =
-    event.capacity - (event.signups_count || 0);
+  if (!event) return <div>Ładowanie...</div>;
+
+  const freeSpots = event.capacity - (event.signups_count || 0);
 
   return (
-    <Container style={{ marginTop: 20 }}>
+    <Container style={{ marginTop: "40px" }}>
       <Row>
-        <Col>
-          <h2>{event.title}</h2>
-          <p>
-            <strong>Organizator:</strong>{" "}
-            {event.creator_username} ({event.creator_email})
-          </p>
-          <p>
-            <strong>Adres:</strong> {event.address}
-          </p>
-          <p>
-            <strong>Data:</strong>{" "}
-            {new Date(event.date).toLocaleString()}
-          </p>
-          <p>
-            <strong>Wolne miejsca:</strong> {freeSpots} /{" "}
-            {event.capacity}
-          </p>
-          <p>
-            <strong>Opis:</strong> {event.description}
-          </p>
-          <Button variant="success" onClick={handleSignup}>
-            Zapisz się
-          </Button>
+        <Col md={8}>
+          <Card>
+            <Card.Body>
+              <Card.Title>{event.title}</Card.Title>
+              <Card.Subtitle className="mb-2 text-muted">
+                {new Date(event.date).toLocaleString()}
+              </Card.Subtitle>
+              <Card.Text>
+                <strong>Organizator:</strong> {event.creator_username} ({event.creator_email})
+              </Card.Text>
+              <Card.Text>
+                <strong>Adres:</strong> {event.address}
+              </Card.Text>
+              <Card.Text>
+                <strong>Opis:</strong> {event.description}
+              </Card.Text>
+              <Card.Text>
+                <strong>Wolne miejsca:</strong> {freeSpots} / {event.capacity}
+              </Card.Text>
+              <Button variant="success" onClick={handleSignup}>Zapisz się</Button>
+            </Card.Body>
+          </Card>
         </Col>
-      </Row>
-
-      {coords && (
-        <Row style={{ marginTop: 20 }}>
-          <Col>
-            <MapContainer
-              center={[coords.lat, coords.lng]}
-              zoom={13}
-              style={{ height: "300px", width: "100%" }}
-            >
+        <Col md={4}>
+          {coords && (
+            <MapContainer center={[coords.lat, coords.lng]} zoom={13} style={{ height: "300px", width: "100%" }}>
               <TileLayer
                 attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -132,9 +122,9 @@ function EventDetails() {
                 <Popup>{event.title}</Popup>
               </Marker>
             </MapContainer>
-          </Col>
-        </Row>
-      )}
+          )}
+        </Col>
+      </Row>
     </Container>
   );
 }

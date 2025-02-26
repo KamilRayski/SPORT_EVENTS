@@ -1,6 +1,5 @@
-// frontend/src/pages/Dashboard.js
 import React, { useState } from "react";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col, Button, Form, Card } from "react-bootstrap";
 
 function Dashboard() {
   const [email, setEmail] = useState("");
@@ -8,15 +7,19 @@ function Dashboard() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const handleSearch = async () => {
+    const token = localStorage.getItem("accessToken");
     try {
       const res = await fetch("http://localhost:8000/dashboard_events/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
         body: JSON.stringify({ email }),
       });
       if (res.ok) {
         const data = await res.json();
-        setEvents(data);
+        setEvents(Array.isArray(data) ? data : data.events || []);
         setErrorMsg("");
       } else {
         const errData = await res.json();
@@ -31,48 +34,51 @@ function Dashboard() {
   };
 
   return (
-    <Container style={{ marginTop: 20 }}>
-      <Row>
-        <Col>
-          <h2>Dashboard</h2>
-          <p>
-            Wpisz email, aby zobaczyć wydarzenia utworzone przez danego
-            użytkownika i listę zapisanych uczestników.
-          </p>
-          <input
-            type="text"
-            placeholder="Podaj email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{ marginRight: 5 }}
-          />
+    <Container style={{ marginTop: "40px" }}>
+      <h2>Dashboard</h2>
+      <Card className="mb-4 p-3">
+        <Form>
+          <Form.Group className="mb-3">
+            <Form.Label>Podaj email</Form.Label>
+            <Form.Control
+              type="email"
+              placeholder="example@domain.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Form.Group>
           <Button onClick={handleSearch}>Szukaj</Button>
-          {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
-        </Col>
-      </Row>
+        </Form>
+        {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+      </Card>
       <Row>
-        <Col>
-          {events.map((ev) => (
-            <div
-              key={ev.event_id}
-              style={{ border: "1px solid #ccc", marginTop: 10, padding: 10 }}
-            >
-              <h4>{ev.title}</h4>
-              <p>Adres: {ev.address}</p>
-              <p>Data: {new Date(ev.date).toLocaleString()}</p>
-              <p>Pojemność: {ev.capacity}</p>
-              <p>Opis: {ev.description}</p>
-              <p>Uczestnicy:</p>
-              <ul>
-                {ev.signups.map((sign, idx) => (
-                  <li key={idx}>
-                    {sign.username} ({sign.email})
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </Col>
+        {events.length > 0 ? (
+          events.map((ev) => (
+            <Col key={ev.event_id} md={4}>
+              <Card className="mb-3">
+                <Card.Body>
+                  <Card.Title>{ev.title}</Card.Title>
+                  <Card.Text>
+                    <strong>Adres:</strong> {ev.address} <br />
+                    <strong>Data:</strong> {new Date(ev.date).toLocaleString()}
+                  </Card.Text>
+                  <Card.Text>
+                    <strong>Uczestnicy:</strong>
+                    <ul>
+                      {ev.signups.map((sign, idx) => (
+                        <li key={idx}>
+                          {sign.username} ({sign.email})
+                        </li>
+                      ))}
+                    </ul>
+                  </Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))
+        ) : (
+          <p>Brak wyników</p>
+        )}
       </Row>
     </Container>
   );
